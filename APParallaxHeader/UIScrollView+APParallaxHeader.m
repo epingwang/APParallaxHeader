@@ -31,14 +31,9 @@ static char UIScrollViewParallaxView;
 @implementation UIScrollView (APParallaxHeader)
 
 - (void)addParallaxWithImage:(UIImage *)image andHeight:(CGFloat)height {
-    if(self.parallaxView) {
-        if(self.parallaxView.currentSubView) [self.parallaxView.currentSubView removeFromSuperview];
-        [self.parallaxView.imageView setImage:image];
-    }
-    else
-    {
+    
+    if(!self.parallaxView) {
         APParallaxView *view = [[APParallaxView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, height)];
-        [view setClipsToBounds:YES];
         [view.imageView setImage:image];
         
         view.scrollView = self;
@@ -56,38 +51,12 @@ static char UIScrollViewParallaxView;
     }
 }
 
-- (void)addParallaxWithView:(UIView*)view andHeight:(CGFloat)height {
-    if(self.parallaxView) {
-        [self.parallaxView.currentSubView removeFromSuperview];
-        [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
-        [self.parallaxView addSubview:view];
-    }
-    else
-    {
-        APParallaxView *parallaxView = [[APParallaxView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, height)];
-        [parallaxView setClipsToBounds:YES];
-        [view setAutoresizingMask:UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight];
-        [parallaxView addSubview:view];
-        
-        parallaxView.scrollView = self;
-        parallaxView.parallaxHeight = height;
-        [self addSubview:parallaxView];
-        
-        parallaxView.originalTopInset = self.contentInset.top;
-        
-        UIEdgeInsets newInset = self.contentInset;
-        newInset.top = height;
-        self.contentInset = newInset;
-        
-        self.parallaxView = parallaxView;
-        self.showsParallax = YES;
-    }
-}
-
 - (void)setParallaxView:(APParallaxView *)parallaxView {
+    [self willChangeValueForKey:@"APParallaxView"];
     objc_setAssociatedObject(self, &UIScrollViewParallaxView,
                              parallaxView,
                              OBJC_ASSOCIATION_ASSIGN);
+    [self didChangeValueForKey:@"APParallaxView"];
 }
 
 - (APParallaxView *)parallaxView {
@@ -121,7 +90,11 @@ static char UIScrollViewParallaxView;
 
 #pragma mark - ShadowLayer
 
-@implementation APParallaxShadowView
+@interface ShadowView : UIView
+
+@end
+
+@implementation ShadowView
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -181,7 +154,7 @@ static char UIScrollViewParallaxView;
         [self.imageView setClipsToBounds:YES];
         [self addSubview:self.imageView];
         
-        self.shadowView = [[APParallaxShadowView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(frame)-8, CGRectGetWidth(frame), 8)];
+        self.shadowView = [[ShadowView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(frame)-8, CGRectGetWidth(frame), 8)];
         [self.shadowView setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin];
         [self addSubview:self.shadowView];
     }
@@ -189,8 +162,14 @@ static char UIScrollViewParallaxView;
     return self;
 }
 
+-(void)showShadowView:(BOOL)show
+{
+    [self.shadowView setHidden:!show];
+}
+
 - (void)willMoveToSuperview:(UIView *)newSuperview {
     if (self.superview && newSuperview == nil) {
+        //use self.superview, not self.scrollView. Why self.scrollView == nil here?
         UIScrollView *scrollView = (UIScrollView *)self.superview;
         if (scrollView.showsParallax) {
             if (self.isObserving) {
@@ -201,12 +180,6 @@ static char UIScrollViewParallaxView;
             }
         }
     }
-}
-
-- (void)addSubview:(UIView *)view
-{
-    [super addSubview:view];
-    self.currentSubView = view;
 }
 
 #pragma mark - Observing
