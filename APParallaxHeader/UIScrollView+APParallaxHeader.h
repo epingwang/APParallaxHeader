@@ -30,7 +30,7 @@ typedef NSUInteger APParallaxTrackingState;
 @optional
 -(void)APParallaxView:(APParallaxView *)view willChangeFrame:(CGRect)frame;
 -(void)APParallaxView:(APParallaxView *)view didChangeFrame:(CGRect)frame;
-+@end
+@end
 
 @interface APParallaxView : UIView
 
