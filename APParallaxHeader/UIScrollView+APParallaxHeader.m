@@ -201,7 +201,13 @@ static char UIScrollViewParallaxView;
     
     if(self.state == APParallaxTrackingActive) {
         CGFloat yOffset = contentOffset.y*-1;
+        if ([self.delegate respondsToSelector:@selector(APParallaxView:willChangeFrame:)]) {
+            [self.delegate APParallaxView:self willChangeFrame:self.frame];
+        }
         [self setFrame:CGRectMake(0, contentOffset.y, CGRectGetWidth(self.frame), yOffset)];
+        if ([self.delegate respondsToSelector:@selector(APParallaxView:didChangeFrame:)]) {
+            [self.delegate APParallaxView:self didChangeFrame:self.frame];
+        }
     }
 }
 

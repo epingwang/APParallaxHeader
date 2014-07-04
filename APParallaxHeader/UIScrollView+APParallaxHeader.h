@@ -26,7 +26,15 @@ enum {
 
 typedef NSUInteger APParallaxTrackingState;
 
+@protocol APParallaxViewDelegate <NSObject>
+@optional
+－(void)APParallaxView:(APParallaxView *)view willChangeFrame:(CGRect)frame;
+－(void)APParallaxView:(APParallaxView *)view didChangeFrame:(CGRect)frame;
++@end
+
 @interface APParallaxView : UIView
+
+@property (weak) id<APParallaxViewDelegate> delegate;
 
 @property (nonatomic, readonly) APParallaxTrackingState state;
 @property (nonatomic, strong) UIImageView *imageView;
